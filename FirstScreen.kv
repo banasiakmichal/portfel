@@ -1,0 +1,81 @@
+#:import Factory kivy.factory.Factory
+
+<CatButton>:
+    on_release:
+        root.add_to_db()
+        #todo: clean input field
+
+<ProButton>:
+    on_press:
+        root.add_to_db()
+    on_release:
+        pass
+        #todo: clean input field and list
+
+<FirstScreen>:
+    id: screen1
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+
+        #todo: set padding top
+        MDTextField:
+            size_hint_y: 0.15
+            id: cost_input
+            padding: '20dp'
+            heigh: '45dp'
+            hint_text: "dodaj koszt"
+            #todo: correct - only numebrs are allowed so first validate - put this to validate function
+            on_text:
+                root.add_input_items(cost_input.text)
+            #on_validate:
+                #print(cost_input)
+
+        #todo: recycle view - all projects  -cost.text
+
+        MDBoxLayout:
+            size_hint_y: 0.5
+            orientation: 'vertical'
+            spacing: 10
+            MDLabel
+                size_hint_y: 0.05
+                text: 'dodaj do projektu'
+                # halign: 'center'
+
+            #todo - rv for projects
+            ProView:
+                id: pro_view
+                viewclass: 'ProButton'
+                RecycleBoxLayout:
+                    spacing: 5
+                    default_size: None, dp(56)
+                    default_size_hint: 1, None
+                    size_hint_y: None
+                    height: self.minimum_height
+                    orientation: 'vertical'
+
+        #todo: recycle view - all categories -cost.text
+        MDBoxLayout:
+            size_hint_y: 0.5
+            orientation: 'vertical'
+            spacing: 10
+            MDLabel
+                size_hint_y: 0.05
+                text: 'dodaj do kategori'
+                # halign: 'center'
+            #todo - rv for category
+            CatView:
+                id: cat_view
+                viewclass: 'CatButton'
+                RecycleBoxLayout:
+                    spacing: 5
+                    default_size: None, dp(56)
+                    default_size_hint: 1, None
+                    size_hint_y: None
+                    height: self.minimum_height
+                    orientation: 'vertical'
+
+
+

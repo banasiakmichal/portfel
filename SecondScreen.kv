@@ -1,0 +1,22 @@
+<SecondScreen>:
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: 15
+        spacing: 15
+
+        MDLabel:
+            size_hint_y: 0.15
+            text: ' zestawienie kosztów'
+
+        CostsView:
+            id: costs_view
+            viewclass: 'MDLabel'
+
+            RecycleBoxLayout:
+                spacing: 5
+                default_size: None, dp(56)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+

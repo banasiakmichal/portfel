@@ -1,0 +1,60 @@
+<AppButton@MDRaisedButton>:
+    pos_hint: {'center_x': .5, 'center_y': .5}
+    md_bg_color: 0.18, 0.545, 0.341, 1
+
+
+<ThirdScreen>:
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: 5
+        spacing: 5
+
+        MDLabel
+            text: 'dodaj kategorie '
+            # halign: 'center'
+            #todo: coorect frontend here
+        MDTextField:
+            id: cat
+            hint_text: "wpisz nazwe kategorii"
+            #on_validate:
+                #root.val_cat(text)
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            #todo: add category
+            FloatLayout:
+                AppButton:
+                    text: 'dodaj kategorię'
+                    on_release:
+                        root.add_cat(cat.text)
+            #todo: del category
+            FloatLayout:
+                AppButton:
+                    text: 'usuń kategorię'
+                    on_release:
+                        root.del_cat(cat.text)
+
+        MDLabel
+            text: 'dodaj projekt'
+            # halign: 'center'
+        #todo: correct frontend
+        MDTextField:
+            id: pro
+            hint_text: "wpisz nazwe projektu"
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            #todo: add project
+            FloatLayout:
+                AppButton:
+                    text: 'dodaj projekt'
+                    on_release:
+                        root.add_pro(pro.text)
+            #todo: del project
+            FloatLayout:
+                AppButton:
+                    text: 'usuń projekt'
+                    on_release:
+                        root.del_pro(pro.text)
+
+        #todo: after push the button - clear input tekst and open dialog with information project was added
