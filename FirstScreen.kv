@@ -22,13 +22,9 @@
             heigh: '45dp'
             hint_text: "wpisz kwotę "
             mode: "fill"
+            multiline: False
             on_focus: self.text = ""
-            on_text:
-                # root.add_input_items(cost_input.text)
-                root.validate_input()
-                # todo: one func more to check if input is only a int or float -- otherwise --> dialog window
-            #on_validate:
-                #print(cost_input)
+            on_text: root._input()
 
         MDLabel:
             size_hint_y: 0.4
@@ -37,6 +33,7 @@
             font_style: 'Body1'
             theme_text_color: "Custom"
             text_color: 0.349, 0.349, 0.349, 1
+
 
         CatProView:
             id: catpro_view

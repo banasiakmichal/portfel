@@ -28,7 +28,6 @@ class Mydb:
     def insert_cost(self, cost, project, category):
         self.cur.execute("insert into budget values (?, ?, ?, ?)", (self.today, project, category, cost,))
         self.conn.commit()
-        print(self.conn.total_changes)
         return self.conn.total_changes
 
     """ fetch costs from table"""
@@ -90,7 +89,7 @@ class Mydb:
 
         if stor:
             for item in stor:
-                state = f"SELECT cost from budget WHERE '{param}' = '{item}'"
+                state = f"SELECT cost from budget WHERE {param} = '{item}'"
                 # get all costs for all items in category and project
                 rows = self.cur.execute(state).fetchall()
                 store['catpro'][item] = [sum([i for item in rows for i in item])]
@@ -116,6 +115,7 @@ class Mydb:
 
     def clear_db(self):
         self.cur.execute("DELETE from budget;")
+        self.conn.commit()
         print(self.cur.rowcount)
         return self.cur.rowcount
 

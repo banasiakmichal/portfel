@@ -6,28 +6,25 @@ from kivymd.uix.button import MDRectangleFlatButton
 from kivymd.app import App
 from kivy.properties import StringProperty
 from kivy.factory import Factory
+from Mdialog import InfoDialog
+from decor import db_insert_dialog
 import re
 
-cost_in = None
+texts_in = {
+    'in_error': 'Niepoprawny format kosztów. Wprowadź koszt zgodnie z wzorecem: np: dziesięć złotych i pięćdziesiat '
+                'groszy to: 10.50'
+}
+
+cost_input = []
+
 
 class FirstScreen(MDBottomNavigationItem):
     text_in = StringProperty()
 
-    def validate_input(self):
+    def _input(self):
         if self.text_in:
-            re_obj = re.compile(r'(^[0-9]+(\.|\,)(?:\d\d?)$)')
-            match_obj = re_obj.match(self.text_in)
-            print('match_obj', match_obj)
-            if match_obj is not None:
-                if ',' in self.text_in:
-                    global cost_in
-                    cost_in = float(self.text_in.replace(',', '.'))
-                else:
-                    cost_in = self.text_in
-                    print('global cost:', cost_in)
-        else:
-            pass
-            # todo: dialog here:wprowadz prawidłową wartosć kosztów
+            global cost_input
+            cost_input.append(self.text_in)
 
 
 class CatProView(RecycleView):
@@ -53,30 +50,35 @@ class CatProView(RecycleView):
 class CatProButton(MDRectangleFlatButton):
     """ add new cost in to db """
     def add_to_db(self):
-        global cost_in
-        if cost_in is not None and cost_in != 0.0:
-            cost = str(cost_in)
-            print('cost', cost)
-            item = self.text
-            app = App.get_running_app().db
-            #todo: correct this
-            if item in store['category']['cat'] and item in store['project']['pro']:
-                app.insert_cost(cost, None, item)
-                app.insert_cost(cost, item, None)
+        global cost_input
+        if cost_input:
+            cost = cost_input[-1]
+            cost = self.validate(cost)
+            if cost is not None and cost != 0.0:
+                cost, item = str(cost), self.text
+
+                if item in store['category']['cat']:
+                    self.ins_cost(cost, None, item)                          #app.insert_cost(cost, None, item)
+                elif item in store['project']['pro']:
+                    self.ins_cost(cost, item, None)                          #app.insert_cost(cost, item, None)
             else:
-                if item in store['category']['cat'] and item not in store['project']['pro']:
-                # for cat
-                    app.insert_cost(cost, None, item)
-                elif item in store['project']['pro'] and item not in store['category']['cat']:
-                # for project
-                    app.insert_cost(cost, item, None)
+                InfoDialog(text=f'{texts_in["in_error"]}').dialog_()
+        else:
+             InfoDialog(text=f'{texts_in["in_error"]}').dialog_()
+        cost_input[:] = []
 
-            cost_in = None
+    def validate(self, cost):
+        re_obj = re.compile(r'(^[0-9]+(\.|\,)?((\d)?\d)?$)')  # (^[0-9]+(\.| \,)(?:\d\d?)$)
+        match_obj = re_obj.match(cost)
+        if match_obj is not None:
+            if ',' in cost:
+                cost = float(cost.replace(',', '.'))
+            return float(cost)
 
-            #todo: dialog: koszt został pomyślnie dodany -- lepiej -- slider!!!
+    @db_insert_dialog
+    def ins_cost(self, *args):
+        app = App.get_running_app().db
+        if app: print('app works')
+        return app.insert_cost(*args)
 
 
-
-
-        """ recalculate cost in store['costs'] and store['cat_pro'] """
-        #todo: App - recalculate fetch_cost

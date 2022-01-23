@@ -9,6 +9,5 @@ store['project'] = {'pro': []}
 
 """ general costs"""
 store['costs'] = {}
-
 store['catpro'] ={}
 

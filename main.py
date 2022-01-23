@@ -40,7 +40,7 @@ MDScreen:
         FirstScreen:
             id: screen1
             name: 'screen1'
-            text: 'Ogólne'
+            text: 'Kasa'
             icon: 'account-cash'
             # badge_icon: "numeric-10"
             on_leave:
@@ -61,9 +61,8 @@ MDScreen:
             text: 'Ustawienia'
             icon: 'table-settings'
             on_leave:
-                app.update_all()
+                # app.update_all()
                 screen1.ids.catpro_view.populate_view()
-                screen2.ids.general_view.populate_view()
                 screen2.ids.costs_view.populate_view()
 '''
 
@@ -103,11 +102,10 @@ class Budget(MDApp):
         self.fetch_l_month()
         self.fetch_year()
         self.fetch_l_year()
-        #Clock.schedule_once(partial(self.db.cat_pro_costs, 'category', store['category']['cat']))
-        #Clock.schedule_once(partial(self.db.cat_pro_costs, 'project', store['project']['pro']))
         #test func for procat cost
         self.db.procat('project', store['project']['pro'])
         self.db.procat('category', store['category']['cat'])
+        print(store['catpro']) #todo: del print!!
 
     def fetch_costs(self):
         """  all costs for pro, cat and datas source in mydb class"""
@@ -144,9 +142,5 @@ class Budget(MDApp):
     def fetch_l_year(self):
         rows = self.db.last_year()
         store['costs']['w poprzednim roku'] = sum([i for item in rows for i in item])
-
-    def clean_input(self):
-        self.root.ids.manager.ids.screen1.ids.cost_input.text = ''
-
 
 Budget().run()

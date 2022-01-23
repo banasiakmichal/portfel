@@ -104,9 +104,23 @@ class ThirdScreen(MDBottomNavigationItem):
                             f' sie ponownie, sprawdź pisownie i upewnij się że taka pozycja istnieje w Twoim portfelu').dialog_()
 
     def clear_db_(self):
-        store['category']['cat'][:] = []
-        store['project']['pro'][:] = []
         app = App.get_running_app().db
-        r = app.clear_db()
-        print(r)
+        store['category']['cat'] = []
+        store['project']['pro'][:] = []
+        store['costs'].clear()
+        store['catpro'].clear()
+        print(store['costs'], store['catpro'])
+
+        try:
+            r = app.clear_db()
+        except Exception as e:
+            InfoDialog(text=f'{texts["error"]}').dialog_()
+            #todo: logging with e
+        else:
+            if r >= 1:
+                InfoDialog(text='Portfel został wyczyszczony. Możesz teraz wprowadzić nowe koszty.').dialog_()
+            else:
+                InfoDialog(text=f'{texts["error"]}').dialog_()
+
+
 
