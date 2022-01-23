@@ -1,4 +1,9 @@
-"""  https://github.com/banasiakmichal/portfel.git """
+"""  https://github.com/banasiakmichal/portfel.git
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/banasiakmichal/portfel.git
+git push -u origin main
+"""
 
 from kivymd.app import MDApp
 from kivy.lang.builder import Builder
@@ -11,6 +16,7 @@ from storage import store
 from kivy.core.window import Window
 from kivy.clock import Clock
 from functools import partial
+from kivy.properties import StringProperty
 Window.size = (375, 667)
 
 
@@ -26,6 +32,7 @@ kv = '''
 
 MDScreen:
     Manager:
+        id: manager
         panel_color: get_color_from_hex("#eeeaea")
         selected_color_background: get_color_from_hex("#97ecf8")
         text_color_active: 0, 0, 0, 1
@@ -38,8 +45,8 @@ MDScreen:
             # badge_icon: "numeric-10"
             on_leave:
                 app.update_all()
+                screen2.ids.general_view.populate_view()
                 screen2.ids.costs_view.populate_view()
-
 
         SecondScreen:
             id: screen2
@@ -54,16 +61,22 @@ MDScreen:
             text: 'Ustawienia'
             icon: 'table-settings'
             on_leave:
-                screen1.ids.cat_view.populate_view()
-                screen1.ids.pro_view.populate_view()
+                app.update_all()
+                screen1.ids.catpro_view.populate_view()
+                screen2.ids.general_view.populate_view()
+                screen2.ids.costs_view.populate_view()
 '''
+
+#todo: wszystkie kwoty - dwa miejsca po przecinku --!!! important
 
 
 class Budget(MDApp):
     db = Mydb()
+    costs_sum = StringProperty('0')
 
     def build(self):
         self.icon = 'logo.png'
+        self.theme_cls.primary_palette = "Orange"
         return Builder.load_string(kv)
 
     def on_start(self):
@@ -82,6 +95,7 @@ class Budget(MDApp):
                 store['project']['pro'] = list(dict.fromkeys(items))
 
     def update_all(self):
+        #todo: condition if store changed - do this else not
         self.fetch_costs()
         self.fetch_today_cost()
         self.fetch_week_cost()
@@ -89,8 +103,11 @@ class Budget(MDApp):
         self.fetch_l_month()
         self.fetch_year()
         self.fetch_l_year()
-        Clock.schedule_once(partial(self.db.cat_pro_costs, 'category', store['category']['cat']))
-        Clock.schedule_once(partial(self.db.cat_pro_costs, 'project', store['project']['pro']))
+        #Clock.schedule_once(partial(self.db.cat_pro_costs, 'category', store['category']['cat']))
+        #Clock.schedule_once(partial(self.db.cat_pro_costs, 'project', store['project']['pro']))
+        #test func for procat cost
+        self.db.procat('project', store['project']['pro'])
+        self.db.procat('category', store['category']['cat'])
 
     def fetch_costs(self):
         """  all costs for pro, cat and datas source in mydb class"""
@@ -98,6 +115,7 @@ class Budget(MDApp):
          #todo: if smth changed use new collor to show it !! important
         rows = self.db.fetch_col(col='cost')
         store['costs']['RAZEM'] = sum([i for item in rows for i in item if i is not None])
+        self.costs_sum = str(sum([i for item in rows for i in item if i is not None]))
 
     def fetch_today_cost(self):
         rows = self.db.fetch_by_date()
@@ -113,7 +131,7 @@ class Budget(MDApp):
 
     def fetch_c_month(self):
         rows = self.db.fetch_current_month()
-        store['costs']['w tymm mesiącu'] = sum([i for item in rows for i in item])
+        store['costs']['w tym miesiącu'] = sum([i for item in rows for i in item])
 
     def fetch_l_month(self):
         rows = self.db.fetch_last_mont()
@@ -127,9 +145,8 @@ class Budget(MDApp):
         rows = self.db.last_year()
         store['costs']['w poprzednim roku'] = sum([i for item in rows for i in item])
 
-
-
-
+    def clean_input(self):
+        self.root.ids.manager.ids.screen1.ids.cost_input.text = ''
 
 
 Budget().run()

@@ -1,60 +1,112 @@
-<AppButton@MDRaisedButton>:
-    pos_hint: {'center_x': .5, 'center_y': .5}
-    md_bg_color: 0.18, 0.545, 0.341, 1
+<MyLabel@MDLabel>:
+    halign: 'center'
+    font_style: 'Body1'
+    theme_text_color: "Custom"
+    text_color: app.theme_cls.primary_color
+
+<PlusButton@MDIconButton>:
+    icon: "plus-circle-outline"
+    icon_size: "44sp"
+    text_color: 0.902, 0.494, 0.133, 1
+    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+    #text_color: app.theme_cls.primary_color
+
+
+<MinusButton@MDIconButton>:
+    icon: "minus-circle-outline"
+    icon_size: "44sp"
+    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+    #text_color: app.theme_cls.primary_color
 
 
 <ThirdScreen>:
     MDBoxLayout:
         orientation: 'vertical'
-        padding: 5
-        spacing: 5
+        padding: 20
+        spacing: 20
 
-        MDLabel
-            text: 'dodaj kategorie '
-            # halign: 'center'
-            #todo: coorect frontend here
         MDTextField:
-            id: cat
-            hint_text: "wpisz nazwe kategorii"
-            #on_validate:
-                #root.val_cat(text)
+            id: catpro
+            hint_text: "wpisz nazwe kategorii lub projektu"
+            mode: "fill"
+
+        MDLabel:
+            size_hint_y: 0.4
+            text: 'dodaj "+" lub usuń "-" projekt lub kategorię'
+            halign: 'center'
+            font_style: 'Body1'
+            theme_text_color: "Custom"
+            text_color: 0.349, 0.349, 0.349, 1
 
         MDBoxLayout:
+            size_hint_y: 0.2
             orientation: 'horizontal'
-            #todo: add category
-            FloatLayout:
-                AppButton:
-                    text: 'dodaj kategorię'
-                    on_release:
-                        root.add_cat(cat.text)
-            #todo: del category
-            FloatLayout:
-                AppButton:
-                    text: 'usuń kategorię'
-                    on_release:
-                        root.del_cat(cat.text)
 
-        MDLabel
-            text: 'dodaj projekt'
-            # halign: 'center'
-        #todo: correct frontend
-        MDTextField:
-            id: pro
-            hint_text: "wpisz nazwe projektu"
+            MyLabel:
+                # size_hint_y: 0.15
+                text: 'kategorie'
+
+            MDFloatLayout:
+                PlusButton:
+                    on_release:
+                        root.add_cat(catpro.text)
+                        #root.dialog_icon_third()
+                        root.ids.catpro.text = ''
+
+            MDFloatLayout:
+                MinusButton:
+                    on_release:
+                        root.del_cat('category', catpro.text)
+                        root.ids.catpro.text = ''
+                        #root.dialog_icon_third()
+
+        MDSeparator:
+            height: "1dp"
 
         MDBoxLayout:
+            size_hint_y: 0.2
             orientation: 'horizontal'
-            #todo: add project
-            FloatLayout:
-                AppButton:
-                    text: 'dodaj projekt'
+
+            MyLabel:
+                # size_hint_y: 0.15
+                text: 'projekty'
+
+
+            MDFloatLayout:
+                PlusButton:
                     on_release:
-                        root.add_pro(pro.text)
-            #todo: del project
-            FloatLayout:
-                AppButton:
-                    text: 'usuń projekt'
+                        root.add_pro(catpro.text)
+                        #root.dialog_icon_third()
+                        root.ids.catpro.text = ''
+
+
+            MDFloatLayout:
+                MinusButton:
                     on_release:
-                        root.del_pro(pro.text)
+                        root.del_pro('project', catpro.text)
+                        #root.dialog_icon_third()
+                        root.ids.catpro.text = ''
+        MDSeparator:
+            height: "1dp"
+
+        MDBoxLayout:
+            orientation: 'vertical'
+            # size_hint_y: 0.2
+
+            MyLabel:
+                # size_hint_y: 0.15
+                text: 'usuń wszystkie koszty z portefla'
+
+            MDFloatLayout:
+                MDRectangleFlatButton:
+                    text: 'wyczyść portfel'
+                    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+                    on_release:
+                        root.ids.catpro.text = ''
+                        root.clear_db_()
+
+
+        MDBoxLayout:
+            #size_hint_y: 0.2
 
         #todo: after push the button - clear input tekst and open dialog with information project was added

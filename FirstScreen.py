@@ -2,39 +2,46 @@ from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from kivy.uix.recycleview import RecycleView
 from kivy.clock import Clock
 from storage import store
-from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.button import MDRectangleFlatButton
 from kivymd.app import App
-from kivy.properties import NumericProperty, StringProperty
+from kivy.properties import StringProperty
 from kivy.factory import Factory
-from kivymd.uix.textfield import MDTextField
+import re
 
-"""  list for costs"""
-input_items = []
-
-""" helping methods """
-def add_items(par):
-    if float(input_items[-1]) > 0:
-        cost = input_items[-1]
-        item = par
-        return cost, item
-
+cost_in = None
 
 class FirstScreen(MDBottomNavigationItem):
-    """ helping methods with input.text = cost"""
-    def add_input_items(self, item):
-        input_items.append(item)
+    text_in = StringProperty()
+
+    def validate_input(self):
+        if self.text_in:
+            re_obj = re.compile(r'(^[0-9]+(\.|\,)(?:\d\d?)$)')
+            match_obj = re_obj.match(self.text_in)
+            print('match_obj', match_obj)
+            if match_obj is not None:
+                if ',' in self.text_in:
+                    global cost_in
+                    cost_in = float(self.text_in.replace(',', '.'))
+                else:
+                    cost_in = self.text_in
+                    print('global cost:', cost_in)
+        else:
+            pass
+            # todo: dialog here:wprowadz prawidłową wartosć kosztów
 
 
-class CatView(RecycleView):
+class CatProView(RecycleView):
     """ RV for Categories """
     def __init__(self, **kwargs):
-        super(CatView, self).__init__(**kwargs)
+        super(CatProView, self).__init__(**kwargs)
         Clock.schedule_once(self.populate_view)
 
     def populate_view(self, *args):
-        if store['category']['cat']:
+        if store['category']['cat'] or store['project']['pro']:
+            # join lists
+            new_store = [*store['category']['cat'], *store['project']['pro']]
             try:
-                self.data = [{'text': str(i)} for i in store['category']['cat']]
+                self.data = [{'text': str(i)} for i in new_store]
             except Exception as e:
                 print('found exception in CatView')
                 #todo: connect this to logger module
@@ -43,49 +50,33 @@ class CatView(RecycleView):
         return self.data
 
 
-class ProView(RecycleView):
-    """ RV for Projects """
-    def __init__(self, **kwargs):
-        super(ProView, self).__init__(**kwargs)
-        Clock.schedule_once(self.populate_view)
-
-    def populate_view(self, *args):
-        if store['project']['pro']:
-            try:
-                self.data = [{'text': str(i)} for i in store['project']['pro']]
-            except Exception as e:
-                print('found exception in CatView')
-                #todo: connect this to logger module
-        else:
-            self.data = []
-        return self.data
-
-
-class CatButton(MDRaisedButton):
+class CatProButton(MDRectangleFlatButton):
     """ add new cost in to db """
     def add_to_db(self):
-        try:
-            cost, cat = add_items(self.text)
-        except Exception as e:
-            #todo: dialog - no cost to add
-            print('no cost to add')
-        else:
+        global cost_in
+        if cost_in is not None and cost_in != 0.0:
+            cost = str(cost_in)
+            print('cost', cost)
+            item = self.text
             app = App.get_running_app().db
-            app.insert_cost(cost, None, cat)
+            #todo: correct this
+            if item in store['category']['cat'] and item in store['project']['pro']:
+                app.insert_cost(cost, None, item)
+                app.insert_cost(cost, item, None)
+            else:
+                if item in store['category']['cat'] and item not in store['project']['pro']:
+                # for cat
+                    app.insert_cost(cost, None, item)
+                elif item in store['project']['pro'] and item not in store['category']['cat']:
+                # for project
+                    app.insert_cost(cost, item, None)
+
+            cost_in = None
+
+            #todo: dialog: koszt został pomyślnie dodany -- lepiej -- slider!!!
+
+
+
+
         """ recalculate cost in store['costs'] and store['cat_pro'] """
         #todo: App - recalculate fetch_cost
-
-
-class ProButton(MDRaisedButton):
-    """ add new cost in to db """
-    def add_to_db(self):
-        try:
-            cost, pro = add_items(self.text)
-        except Exception as e:
-            # todo: dialog - no cost to add
-            print('no cost to add')
-        else:
-            app = App.get_running_app().db
-            app.insert_cost(cost, pro, None)
-        """ recalculate cost in store['costs'] and store['cat_pro'] """
-        # todo: App - recalculate fetch_cost + on_leave clear widget in second screen and add new one with new costs !!!! IMPORTANT

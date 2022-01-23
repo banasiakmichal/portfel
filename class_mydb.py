@@ -29,7 +29,7 @@ class Mydb:
         self.cur.execute("insert into budget values (?, ?, ?, ?)", (self.today, project, category, cost,))
         self.conn.commit()
         print(self.conn.total_changes)
-        pass
+        return self.conn.total_changes
 
     """ fetch costs from table"""
     def fetch_col(self, col='project'):
@@ -50,10 +50,7 @@ class Mydb:
         return rows
 
     def fetch_last_mont(self):
-        m = str(self.month-1)
-        if m == '0':
-            m = str(12)
-        rows = self.cur.execute(f"Select cost from budget WHERE date LIKE '%{self.year}-{m}%'").fetchall()
+        rows = self.cur.execute(f"Select cost from budget WHERE date LIKE '%{self.year}-{self.get_month()}%'").fetchall()
         return rows
 
     #def all_year(self):
@@ -72,11 +69,9 @@ class Mydb:
     def cat_pro_costs(self, catpro, stor, *args):
         """ summary costs for items in category and projects """
         if stor:
-            print(stor)
             for it in stor:
                     rows = self.cur.execute(f"SELECT cost from budget WHERE {catpro} = '{it}'").fetchall()
                     store['costs'][it] = sum([i for item in rows for i in item])
-                    print(store['costs'][it])
 
     def calendar(self):
         """ calendar function for weekly cost calculate """
@@ -89,11 +84,42 @@ class Mydb:
                 self.day_end = f'{self.today[:4]}-{self.today[5:7]}-{7 - value + d}'
                 self.day_start = f'{self.today[:4]}-{self.today[5:7]}-{d - value + 1}'
 
+    def procat(self, param, stor):
+        ''' all cost in category item and project item
+         list[0] = all costs, list[1] - last week costs, list[2] - last month  '''
 
-"""
+        if stor:
+            for item in stor:
+                state = f"SELECT cost from budget WHERE '{param}' = '{item}'"
+                # get all costs for all items in category and project
+                rows = self.cur.execute(state).fetchall()
+                store['catpro'][item] = [sum([i for item in rows for i in item])]
+                # get all for item from last week
+                rows_w = self.cur.execute(f"{state} AND date BETWEEN '{self.day_start}' and '{self.day_end}'").fetchall()
+                store['catpro'][item].append(sum([i for item in rows_w for i in item]))
+                # get all for item from last month
+                rows_m = self.cur.execute(f"{state} AND date LIKE '%{str(self.month)}%'").fetchall()
+                store['catpro'][item].append(sum([i for item in rows_m for i in item]))
+
+    def get_month(self):
+        """ helping func to get month number """
+        m = str(self.month - 1)
+        if m == '0':
+            m = str(12)
+        return m
+
+    def del_item(self, catpro, item):
+        query = f"DELETE from budget WHERE {catpro} = ?"
+        self.cur.execute(query, (item,))
+        self.conn.commit()
+        return self.cur.rowcount
+
+    def clear_db(self):
+        self.cur.execute("DELETE from budget;")
+        print(self.cur.rowcount)
+        return self.cur.rowcount
+
 
     #def insertdb(self):
         #with closing(self.conn) as connection:
             #with closing(self.cur) as cursor:
-
-"""

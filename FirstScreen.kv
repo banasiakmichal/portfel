@@ -1,81 +1,53 @@
 #:import Factory kivy.factory.Factory
 
-<CatButton>:
+<CatProButton>:
+    text_color: 0.349, 0.349, 0.349, 1
+    #on_press:
+        #root.add_to_db()
     on_release:
         root.add_to_db()
-        #todo: clean input field
-
-<ProButton>:
-    on_press:
-        root.add_to_db()
-    on_release:
-        pass
         #todo: clean input field and list
 
 <FirstScreen>:
+    text_in: cost_input.text
     id: screen1
 
     MDBoxLayout:
         orientation: 'vertical'
-        padding: 10
-        spacing: 10
+        padding: 20
+        spacing: 20
 
-        #todo: set padding top
         MDTextField:
-            size_hint_y: 0.15
             id: cost_input
-            padding: '20dp'
             heigh: '45dp'
-            hint_text: "dodaj koszt"
-            #todo: correct - only numebrs are allowed so first validate - put this to validate function
+            hint_text: "wpisz kwotę "
+            mode: "fill"
+            on_focus: self.text = ""
             on_text:
-                root.add_input_items(cost_input.text)
+                # root.add_input_items(cost_input.text)
+                root.validate_input()
+                # todo: one func more to check if input is only a int or float -- otherwise --> dialog window
             #on_validate:
                 #print(cost_input)
 
-        #todo: recycle view - all projects  -cost.text
+        MDLabel:
+            size_hint_y: 0.4
+            text: 'wybierz kategorię lub projekt aby dodać nowy koszt'
+            halign: 'center'
+            font_style: 'Body1'
+            theme_text_color: "Custom"
+            text_color: 0.349, 0.349, 0.349, 1
 
-        MDBoxLayout:
-            size_hint_y: 0.5
-            orientation: 'vertical'
-            spacing: 10
-            MDLabel
-                size_hint_y: 0.05
-                text: 'dodaj do projektu'
-                # halign: 'center'
-
-            #todo - rv for projects
-            ProView:
-                id: pro_view
-                viewclass: 'ProButton'
-                RecycleBoxLayout:
-                    spacing: 5
-                    default_size: None, dp(56)
-                    default_size_hint: 1, None
-                    size_hint_y: None
-                    height: self.minimum_height
-                    orientation: 'vertical'
-
-        #todo: recycle view - all categories -cost.text
-        MDBoxLayout:
-            size_hint_y: 0.5
-            orientation: 'vertical'
-            spacing: 10
-            MDLabel
-                size_hint_y: 0.05
-                text: 'dodaj do kategori'
-                # halign: 'center'
-            #todo - rv for category
-            CatView:
-                id: cat_view
-                viewclass: 'CatButton'
-                RecycleBoxLayout:
-                    spacing: 5
-                    default_size: None, dp(56)
-                    default_size_hint: 1, None
-                    size_hint_y: None
-                    height: self.minimum_height
-                    orientation: 'vertical'
+        CatProView:
+            id: catpro_view
+            viewclass: 'CatProButton'
+            RecycleBoxLayout:
+                spacing: 10
+                default_size: None, dp(56)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
 
 
 
