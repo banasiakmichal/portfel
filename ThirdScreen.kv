@@ -7,7 +7,8 @@
 <PlusButton@MDIconButton>:
     icon: "plus-circle-outline"
     icon_size: "44sp"
-    text_color: 0.902, 0.494, 0.133, 1
+    theme_icon_color: 'Custom'
+    text_color: 0.8, 0.8, 0.8, 1
     pos_hint: {"center_x": 0.5, "center_y": 0.5}
     #text_color: app.theme_cls.primary_color
 
@@ -15,6 +16,8 @@
 <MinusButton@MDIconButton>:
     icon: "minus-circle-outline"
     icon_size: "44sp"
+    theme_icon_color: 'Custom'
+    text_color: 0.8, 0.8, 0.8, 1
     pos_hint: {"center_x": 0.5, "center_y": 0.5}
     #text_color: app.theme_cls.primary_color
 
@@ -22,7 +25,7 @@
 <ThirdScreen>:
     MDBoxLayout:
         orientation: 'vertical'
-        padding: 20
+        padding: [dp(20), dp(30),dp(20),dp(20)]
         spacing: 20
 
         MDTextField:
@@ -32,7 +35,7 @@
 
         MDLabel:
             size_hint_y: 0.4
-            text: 'dodaj "+" lub usuń "-" projekt lub kategorię'
+            text: 'dodaj "+" lub usuń "-"'
             halign: 'center'
             font_style: 'Body1'
             theme_text_color: "Custom"
@@ -50,15 +53,16 @@
                 PlusButton:
                     on_release:
                         root.add_cat(catpro.text)
-                        #root.dialog_icon_third()
                         root.ids.catpro.text = ''
+                        app.update_gen_cost()
+                        app.update_procat_costs()
 
             MDFloatLayout:
                 MinusButton:
                     on_release:
                         root.del_cat('category', catpro.text)
                         root.ids.catpro.text = ''
-                        #root.dialog_icon_third()
+                        app.update_gen_cost()
 
         MDSeparator:
             height: "1dp"
@@ -76,16 +80,18 @@
                 PlusButton:
                     on_release:
                         root.add_pro(catpro.text)
-                        #root.dialog_icon_third()
                         root.ids.catpro.text = ''
+                        app.update_gen_cost()
+                        app.update_procat_costs()
 
 
             MDFloatLayout:
                 MinusButton:
                     on_release:
                         root.del_pro('project', catpro.text)
-                        #root.dialog_icon_third()
                         root.ids.catpro.text = ''
+                        app.update_gen_cost()
+
         MDSeparator:
             height: "1dp"
 
@@ -102,8 +108,9 @@
                     text: 'wyczyść portfel'
                     pos_hint: {"center_x": 0.5, "center_y": 0.5}
                     on_release:
-                        root.ids.catpro.text = ''
                         root.clear_db_()
+                        root.ids.catpro.text = ''
+                        app.update_all()
 
 
         MDBoxLayout:

@@ -1,10 +1,3 @@
-"""  https://github.com/banasiakmichal/portfel.git
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/banasiakmichal/portfel.git
-git push -u origin main
-"""
-
 from kivymd.app import MDApp
 from kivy.lang.builder import Builder
 from kivymd.uix.bottomnavigation import MDBottomNavigation
@@ -14,15 +7,11 @@ import ThirdScreen
 from class_mydb import Mydb
 from storage import store
 from kivy.core.window import Window
-from kivy.clock import Clock
-from functools import partial
 from kivy.properties import StringProperty
-Window.size = (375, 667)
 
-
-class Manager(MDBottomNavigation):
-    pass
-
+""" set test window and input android keyboard"""
+# Window.size = (375, 667)
+# Window.softinput_mode = "resize"
 
 kv = '''
 #:import get_color_from_hex kivy.utils.get_color_from_hex
@@ -33,18 +22,16 @@ kv = '''
 MDScreen:
     Manager:
         id: manager
-        panel_color: get_color_from_hex("#eeeaea")
-        selected_color_background: get_color_from_hex("#97ecf8")
-        text_color_active: 0, 0, 0, 1
+        #panel_color: get_color_from_hex("#eeeaea")
+        #selected_color_background: get_color_from_hex("#97ecf8")
+        #text_color_active: 0, 0, 0, 1
 
         FirstScreen:
             id: screen1
             name: 'screen1'
             text: 'Kasa'
             icon: 'account-cash'
-            # badge_icon: "numeric-10"
             on_leave:
-                app.update_all()
                 screen2.ids.general_view.populate_view()
                 screen2.ids.costs_view.populate_view()
 
@@ -53,20 +40,20 @@ MDScreen:
             name: 'screen2'
             text: 'Portfel'
             icon: 'format-list-bulleted-type'
-            #on_leave:
-                #self.all_costs()
 
         ThirdScreen:
             name: 'screen3'
             text: 'Ustawienia'
             icon: 'table-settings'
             on_leave:
-                # app.update_all()
                 screen1.ids.catpro_view.populate_view()
+                screen2.ids.general_view.populate_view()
                 screen2.ids.costs_view.populate_view()
 '''
 
-#todo: wszystkie kwoty - dwa miejsca po przecinku --!!! important
+
+class Manager(MDBottomNavigation):
+    pass
 
 
 class Budget(MDApp):
@@ -76,12 +63,19 @@ class Budget(MDApp):
     def build(self):
         self.icon = 'logo.png'
         self.theme_cls.primary_palette = "Orange"
+        self.theme_cls.primary_hue = "500"
         return Builder.load_string(kv)
 
     def on_start(self):
         """ update views from db """
         self.update_store_cat_pro('category', 'project')
         self.update_all()
+
+    def on_pause(self):
+        self.db.conn.close()
+
+    def on_stop(self):
+        self.db.conn.close()
 
     """ fetch db methods """
     def update_store_cat_pro(self, *args):
@@ -93,54 +87,46 @@ class Budget(MDApp):
             else:
                 store['project']['pro'] = list(dict.fromkeys(items))
 
-    def update_all(self):
-        #todo: condition if store changed - do this else not
-        self.fetch_costs()
-        self.fetch_today_cost()
-        self.fetch_week_cost()
-        self.fetch_c_month()
-        self.fetch_l_month()
-        self.fetch_year()
-        self.fetch_l_year()
-        #test func for procat cost
+    def update_procat_costs(self):
         self.db.procat('project', store['project']['pro'])
         self.db.procat('category', store['category']['cat'])
-        print(store['catpro']) #todo: del print!!
+
+    def update_gen_cost(self):
+        self.fetch_costs()
+        self.fetch_general_costs()
+
+    def update_all(self):
+        #todo: TEST: fetch from zero db ?
+        self.fetch_costs()
+        self.fetch_general_costs()
+        self.db.procat('project', store['project']['pro'])
+        self.db.procat('category', store['category']['cat'])
 
     def fetch_costs(self):
         """  all costs for pro, cat and datas source in mydb class"""
-        #todo: def fetch costs fromdb check if smth changed and if True - update store['costs']
-         #todo: if smth changed use new collor to show it !! important
         rows = self.db.fetch_col(col='cost')
-        store['costs']['RAZEM'] = sum([i for item in rows for i in item if i is not None])
-        self.costs_sum = str(sum([i for item in rows for i in item if i is not None]))
+        store['costs']['RAZEM'] = f'{sum([i for item in rows for i in item if i is not None]):.2f}'
+        self.costs_sum = f'{(sum([i for item in rows for i in item if i is not None])):.2f}'
 
-    def fetch_today_cost(self):
-        rows = self.db.fetch_by_date()
-        store['costs']['dzisiaj'] = sum([i for item in rows for i in item if i is not None])
+    def fetch_general_costs(self):
+        """ fetch and pass into localstore all today costs """
+        self.fetch_items(self.db.fetch_by_date, 'dzisiaj')
+        """ fetch and pass into localstore from curent week """
+        self.fetch_items(self.db.fetch_week, 'w tym tygodniu')
+        """ fetch and pass into localstore all costs from - current month """
+        self.fetch_items(self.db.fetch_current_month, 'w tym miesiącu')
+        """ fetch and pass into localstore all costs from - last month """
+        self.fetch_items(self.db.fetch_last_mont, 'miesiąc wcześniej')
+        """ fetch and pass into localstore all costs from - current year """
+        self.fetch_items(self.db.all_year, 'w tym roku')
+        """ fetch and pass into local store all cost from last year """
+        self.fetch_items(self.db.last_year, 'w poprzednim roku')
 
-    #todo: @decorators here to wrapp function and use one method with multiple attributes
-    def fetch_week_cost(self):
-        rows = self.db.fetch_week()
-        if rows:
-            store['costs']['w tym tygodniu'] = sum([i for item in rows for i in item])
-        else:
-            store['costs']['w tym tygodniu'] = 'brak danych'
+    def fetch_items(self, f, ar1):
+        """ fetch method"""
+        r_ = f()
+        store['costs'][ar1] = f'{sum([i for item in r_ for i in item]):.2f}'
+        return ar1
 
-    def fetch_c_month(self):
-        rows = self.db.fetch_current_month()
-        store['costs']['w tym miesiącu'] = sum([i for item in rows for i in item])
-
-    def fetch_l_month(self):
-        rows = self.db.fetch_last_mont()
-        store['costs']['miesiac wcześniej'] = sum([i for item in rows for i in item])
-
-    def fetch_year(self):
-        rows = self.db.all_year()
-        store['costs']['w tym roku'] = sum([i for item in rows for i in item])
-
-    def fetch_l_year(self):
-        rows = self.db.last_year()
-        store['costs']['w poprzednim roku'] = sum([i for item in rows for i in item])
 
 Budget().run()

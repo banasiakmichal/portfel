@@ -9,5 +9,6 @@ store['project'] = {'pro': []}
 
 """ general costs"""
 store['costs'] = {}
-store['catpro'] ={}
+""" costs for category and projects"""
+store['catpro'] = {}
 

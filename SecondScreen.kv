@@ -15,11 +15,8 @@
 <SecondScreen>:
     MDBoxLayout:
         orientation: 'vertical'
-        padding: 20
-        spacing: 10
-
-        MDSeparator:
-            height: "1dp"
+        padding: [dp(20), dp(30),dp(20),dp(20)]
+        spacing: 5
 
         MDLabel:
             size_hint_y: 0.1
@@ -33,6 +30,7 @@
             height: "1dp"
 
         MDBoxLayout:
+            size_hint_y: 0.45
             orientation: 'vertical'
             id: general_box
 

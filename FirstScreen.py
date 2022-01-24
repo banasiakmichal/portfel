@@ -5,13 +5,12 @@ from storage import store
 from kivymd.uix.button import MDRectangleFlatButton
 from kivymd.app import App
 from kivy.properties import StringProperty
-from kivy.factory import Factory
 from Mdialog import InfoDialog
-from decor import db_insert_dialog
+from decor import db_dialog
 import re
 
 texts_in = {
-    'in_error': 'Niepoprawny format kosztów. Wprowadź koszt zgodnie z wzorecem: np: dziesięć złotych i pięćdziesiat '
+    'in_error': 'Niepoprawny format kosztów. Wprowadź koszt zgodnie z wzorcem: np: dziesięć złotych i pięćdziesiat '
                 'groszy to: 10.50'
 }
 
@@ -40,8 +39,7 @@ class CatProView(RecycleView):
             try:
                 self.data = [{'text': str(i)} for i in new_store]
             except Exception as e:
-                print('found exception in CatView')
-                #todo: connect this to logger module
+                pass    #todo: v.2 - logging module with e, emialclient, internet permission
         else:
             self.data = []
         return self.data
@@ -56,11 +54,10 @@ class CatProButton(MDRectangleFlatButton):
             cost = self.validate(cost)
             if cost is not None and cost != 0.0:
                 cost, item = str(cost), self.text
-
                 if item in store['category']['cat']:
-                    self.ins_cost(cost, None, item)                          #app.insert_cost(cost, None, item)
+                    self.ins_cost(cost, None, item)
                 elif item in store['project']['pro']:
-                    self.ins_cost(cost, item, None)                          #app.insert_cost(cost, item, None)
+                    self.ins_cost(cost, item, None)
             else:
                 InfoDialog(text=f'{texts_in["in_error"]}').dialog_()
         else:
@@ -75,10 +72,9 @@ class CatProButton(MDRectangleFlatButton):
                 cost = float(cost.replace(',', '.'))
             return float(cost)
 
-    @db_insert_dialog
+    @db_dialog
     def ins_cost(self, *args):
         app = App.get_running_app().db
-        if app: print('app works')
         return app.insert_cost(*args)
 
 

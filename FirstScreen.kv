@@ -2,11 +2,10 @@
 
 <CatProButton>:
     text_color: 0.349, 0.349, 0.349, 1
-    #on_press:
-        #root.add_to_db()
+    font_size: "15sp"
     on_release:
         root.add_to_db()
-        #todo: clean input field and list
+        app.update_all()
 
 <FirstScreen>:
     text_in: cost_input.text
@@ -14,37 +13,42 @@
 
     MDBoxLayout:
         orientation: 'vertical'
-        padding: 20
-        spacing: 20
+        padding: [dp(10), dp(40),dp(10),dp(10)]
+        spacing: 10
 
         MDTextField:
             id: cost_input
             heigh: '45dp'
+            input_type: 'number'
             hint_text: "wpisz kwotę "
             mode: "fill"
             multiline: False
             on_focus: self.text = ""
             on_text: root._input()
 
+        MDBoxLayout:
+            size_hint_y: 0.6
+            CatProView:
+                id: catpro_view
+                viewclass: 'CatProButton'
+                RecycleBoxLayout:
+                    spacing: 10
+                    default_size: None, dp(56)
+                    default_size_hint: 1, None
+                    size_hint_y: None
+                    height: self.minimum_height
+                    orientation: 'vertical'
+
+        MDSeparator:
+            height: "1dp"
+
         MDLabel:
-            size_hint_y: 0.4
-            text: 'wybierz kategorię lub projekt aby dodać nowy koszt'
+            size_hint_y: 0.3
+            text: 'przypisz koszty do pozycji'
             halign: 'center'
-            font_style: 'Body1'
+            font_style: 'Body2'
             theme_text_color: "Custom"
             text_color: 0.349, 0.349, 0.349, 1
-
-
-        CatProView:
-            id: catpro_view
-            viewclass: 'CatProButton'
-            RecycleBoxLayout:
-                spacing: 10
-                default_size: None, dp(56)
-                default_size_hint: 1, None
-                size_hint_y: None
-                height: self.minimum_height
-                orientation: 'vertical'
 
 
 
