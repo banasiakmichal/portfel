@@ -1,14 +1,17 @@
-from kivymd.app import MDApp
+# set keyboard mode for ios device
+from kivy.config import Config
+Config.set('kivy', 'keyboard_mode', 'dock')
 from kivy.lang.builder import Builder
 from kivymd.uix.bottomnavigation import MDBottomNavigation
 import SecondScreen
 import FirstScreen
 import ThirdScreen
 from class_mydb import Mydb
-from storage import store
+from storage import Storage
 from kivy.core.window import Window
 from kivy.properties import StringProperty
-
+from kivymd.app import MDApp
+# from os.path import join
 """ set test window and input android keyboard"""
 # Window.size = (375, 667)
 # Window.softinput_mode = "resize"
@@ -59,6 +62,16 @@ class Manager(MDBottomNavigation):
 class Budget(MDApp):
     db = Mydb()
     costs_sum = StringProperty('0')
+    # store = ''
+
+    # added 27.01
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # init DICTstorage from class Storage() in storage.py for ios device
+        self.storage = Storage(self.user_data_dir)
+        # self.storage = Storage('') local venv
+        self.store = self.storage.store
+        # print(join(self.user_data_dir, 'STORE'))
 
     def build(self):
         self.icon = 'logo.png'
@@ -67,7 +80,6 @@ class Budget(MDApp):
         return Builder.load_string(kv)
 
     def on_start(self):
-        """ update views from db """
         self.update_store_cat_pro('category', 'project')
         self.update_all()
 
@@ -83,13 +95,13 @@ class Budget(MDApp):
             rows = self.db.fetch_col(i)
             items = [i for item in rows for i in item if i is not None]
             if i is 'category':
-                store['category']['cat'] = list(dict.fromkeys(items))
+                self.store['category']['cat'] = list(dict.fromkeys(items))
             else:
-                store['project']['pro'] = list(dict.fromkeys(items))
+                self.store['project']['pro'] = list(dict.fromkeys(items))
 
     def update_procat_costs(self):
-        self.db.procat('project', store['project']['pro'])
-        self.db.procat('category', store['category']['cat'])
+        self.db.procat('project', self.store['project']['pro'])
+        self.db.procat('category', self.store['category']['cat'])
 
     def update_gen_cost(self):
         self.fetch_costs()
@@ -99,13 +111,13 @@ class Budget(MDApp):
         #todo: TEST: fetch from zero db ?
         self.fetch_costs()
         self.fetch_general_costs()
-        self.db.procat('project', store['project']['pro'])
-        self.db.procat('category', store['category']['cat'])
+        self.db.procat('project', self.store['project']['pro'])
+        self.db.procat('category', self.store['category']['cat'])
 
     def fetch_costs(self):
         """  all costs for pro, cat and datas source in mydb class"""
         rows = self.db.fetch_col(col='cost')
-        store['costs']['RAZEM'] = f'{sum([i for item in rows for i in item if i is not None]):.2f}'
+        self.store['costs']['RAZEM'] = f'{sum([i for item in rows for i in item if i is not None]):.2f}'
         self.costs_sum = f'{(sum([i for item in rows for i in item if i is not None])):.2f}'
 
     def fetch_general_costs(self):
@@ -125,8 +137,16 @@ class Budget(MDApp):
     def fetch_items(self, f, ar1):
         """ fetch method"""
         r_ = f()
-        store['costs'][ar1] = f'{sum([i for item in r_ for i in item]):.2f}'
+        self.store['costs'][ar1] = f'{sum([i for item in r_ for i in item]):.2f}'
         return ar1
+
+    def storage(self):
+        #app = MDApp.get_running_app()
+        #ddir = app.user_data_dir
+        self.ddir = self.user_data_dir
+        print('with app:', self.ddir)
+        print('ddir:', self.user_data_dir + 'STORE')
+        # return self.user_data_dir + 'STORE'
 
 
 Budget().run()

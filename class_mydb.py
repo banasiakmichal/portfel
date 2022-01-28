@@ -1,6 +1,6 @@
 import sqlite3, datetime
 from decimal import Decimal
-from storage import store
+from kivymd.app import MDApp
 
 
 class Mydb:
@@ -15,6 +15,7 @@ class Mydb:
     # create dbconn attr
     conn = sqlite3.connect("budget.db")
     cur = conn.cursor()
+
 
     """ crete table with: date, project, category, cost"""
     def __init__(self):
@@ -48,6 +49,7 @@ class Mydb:
     def cat_pro_costs(self, catpro, stor, *args):
         """ summary costs for items in category and projects """
         if stor:
+            store = MDApp.get_running_app().store
             for it in stor:
                     rows = self.cur.execute(f"SELECT cost from budget WHERE {catpro} = '{it}'").fetchall()
                     store['costs'][it] = sum([i for item in rows for i in item])
@@ -68,6 +70,7 @@ class Mydb:
          list[0] = all costs, list[1] - last week costs, list[2] - last month  '''
 
         if stor:
+            store = MDApp.get_running_app().store
             for item in stor:
                 state = f"SELECT cost from budget WHERE {param} = '{item}'"
                 # get all costs for all items in category and project

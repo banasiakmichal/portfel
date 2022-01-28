@@ -1,7 +1,6 @@
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
-from storage import store
 from Mdialog import InfoDialog
-from kivymd.app import App
+from kivymd.app import MDApp
 from decor import db_dialog
 
 texts = {
@@ -13,30 +12,34 @@ texts = {
 class ThirdScreen(MDBottomNavigationItem):
     dialog =None
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.store = MDApp.get_running_app().store
+
     """ add category and project into local storage and db  -  main methods """
 
     def add_cat(self, cat):
-        self.add_to_db(cat, store['category']['cat'])
+        self.add_to_db(cat, self.store['category']['cat'])
 
     def add_pro(self, pro):
-        self.add_to_db(pro, store['project']['pro'])
+        self.add_to_db(pro, self.store['project']['pro'])
 
     def del_cat(self, catpro, item):
-        self.del_item(catpro, item, store['category']['cat'])
+        self.del_item(catpro, item, self.store['category']['cat'])
 
     def del_pro(self, catpro, item):
-        self.del_item(catpro, item, store['project']['pro'])
+        self.del_item(catpro, item, self.store['project']['pro'])
 
     def add_to_db(self, catpro, storage):
         """ add to local storage, insert into db with validation """
         item = catpro.upper()
         if item != '' and len(item) < 15:
-            if item not in store['category']['cat'] and item not in store['project']['pro']:
+            if item not in self.store['category']['cat'] and item not in self.store['project']['pro']:
                 storage.append(catpro.upper())
-                app = App.get_running_app().db
-                if storage is store['category']['cat']:
+                app = MDApp.get_running_app().db
+                if storage is self.store['category']['cat']:
                     self.db_item(app.insert_cost('0', None, catpro.upper()))
-                elif storage is store['project']['pro']:
+                elif storage is self.store['project']['pro']:
                     self.db_item(app.insert_cost('0', catpro.upper(), None))
             else:
                  InfoDialog(text=f'{texts["in_1"]}').dialog_()
@@ -48,8 +51,8 @@ class ThirdScreen(MDBottomNavigationItem):
         item = item.upper()
         if item in storage:
             storage.remove(item)
-            store['catpro'].pop(item)
-            app = App.get_running_app().db
+            self.store['catpro'].pop(item)
+            app = MDApp.get_running_app().db
             self.db_item(app.del_item(catpro, item))
         else:
             InfoDialog(text=f'w {self.helper(catpro)} nie ma pozycji {item}, sprobuj usunać z drugiego zbioru, jeśli komunikat wyświetli'
@@ -67,11 +70,11 @@ class ThirdScreen(MDBottomNavigationItem):
 
     @ db_dialog
     def clear_db_(self):
-        store['category']['cat'] = []
-        store['project']['pro'][:] = []
-        store['costs'].clear()
-        store['catpro'].clear()
-        app = App.get_running_app().db
+        self.store['category']['cat'] = []
+        self.store['project']['pro'][:] = []
+        self.store['costs'].clear()
+        self.store['catpro'].clear()
+        app = MDApp.get_running_app().db
         return app.clear_db()
 
 
