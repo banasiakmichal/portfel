@@ -1,8 +1,6 @@
 from kivy.storage.dictstore import DictStore
 from os.path import join
 
-#todo: use Pathlib modul do find path for os and android
-
 
 class Storage():
 

@@ -1,3 +1,4 @@
+""" still in ios branch !!! important """
 # set keyboard mode for ios device
 from kivy.config import Config
 Config.set('kivy', 'keyboard_mode', 'dock')
@@ -60,7 +61,7 @@ class Manager(MDBottomNavigation):
 
 
 class Budget(MDApp):
-    db = Mydb()
+
     costs_sum = StringProperty('0')
     # store = ''
 
@@ -72,6 +73,7 @@ class Budget(MDApp):
         # self.storage = Storage('') local venv
         self.store = self.storage.store
         # print(join(self.user_data_dir, 'STORE'))
+        self.db = Mydb(self.user_data_dir)
 
     def build(self):
         self.icon = 'logo.png'

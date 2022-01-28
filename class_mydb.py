@@ -1,6 +1,7 @@
 import sqlite3, datetime
 from decimal import Decimal
 from kivymd.app import MDApp
+from os.path import join
 
 
 class Mydb:
@@ -12,13 +13,11 @@ class Mydb:
     day_start = ''
     day_end = ''
 
-    # create dbconn attr
-    conn = sqlite3.connect("budget.db")
-    cur = conn.cursor()
-
-
     """ crete table with: date, project, category, cost"""
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
+        self.conn = sqlite3.connect(join(self.path, "budget.db"))
+        self.cur = self.conn.cursor()
         self.cur.execute("CREATE TABLE IF NOT EXISTS budget "
                          "(date TEXT, project TEXT, category TEXT, cost INT)")
         self.calendar()
