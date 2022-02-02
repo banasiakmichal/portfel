@@ -14,7 +14,7 @@ from kivy.properties import StringProperty
 from kivymd.app import MDApp
 # from os.path import join
 """ set test window and input android keyboard"""
-# Window.size = (375, 667)
+#Window.size = (375, 667)
 # Window.softinput_mode = "resize"
 
 kv = '''
@@ -70,10 +70,10 @@ class Budget(MDApp):
         super().__init__(**kwargs)
         # init DICTstorage from class Storage() in storage.py for ios device
         self.storage = Storage(self.user_data_dir)
-        # self.storage = Storage('') local venv
+        # self.storage = Storage('') local env
         self.store = self.storage.store
-        # print(join(self.user_data_dir, 'STORE'))
         self.db = Mydb(self.user_data_dir)
+        #self.db = Mydb('') local env
 
     def build(self):
         self.icon = 'logo.png'
