@@ -28,6 +28,12 @@ class Mydb:
         self.conn.commit()
         return self.conn.total_changes
 
+    """ fetch data and cost from category or projects """
+    def fetch_cost_and_data(self, catpro, item):
+        q = state = f"SELECT cost, date from budget WHERE {catpro} = '{item}'"
+        rows = self.cur.execute(q).fetchall()
+        return rows
+
     """ fetch costs from table"""
     def fetch_col(self, col='project'): return self.cur.execute(f"SELECT {col} from budget").fetchall()
 
@@ -36,10 +42,8 @@ class Mydb:
 
     def fetch_week(self): return self.cur.execute(f"Select cost from budget WHERE date BETWEEN '{self.day_start}' and '{self.day_end}'").fetchall()
 
-    #todo: correct in prod app
     def fetch_current_month(self): return self.cur.execute(f"Select cost from budget WHERE date LIKE '%{str(self.year)}-{self.today[5:7]}%'").fetchall()
 
-    #todo: correct in prod app
     def fetch_last_mont(self): return self.cur.execute(f"Select cost from budget WHERE date LIKE '%{str(self.year)}-{self.get_month()}%'").fetchall()
 
     """ fetch all records with year """

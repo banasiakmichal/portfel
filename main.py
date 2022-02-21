@@ -12,6 +12,7 @@ from storage import Storage
 from kivy.core.window import Window
 from kivy.properties import StringProperty
 from kivymd.app import MDApp
+from Mdialog import GraphDialog, Content
 # from os.path import join
 """ set test window and input android keyboard"""
 #Window.size = (375, 667)
@@ -22,6 +23,23 @@ kv = '''
 #:include FirstScreen.kv
 #:include SecondScreen.kv
 #:include ThirdScreen.kv
+
+<Content>:
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    width: "500dp"
+    height: "300dp"
+    
+    BoxLayout:
+        id: graph
+    
+    BoxLayout:
+        id: view
+        
+        ScrollView:
+            MDList:
+                id: list
 
 MDScreen:
     Manager:
@@ -149,6 +167,18 @@ class Budget(MDApp):
         print('with app:', self.ddir)
         print('ddir:', self.user_data_dir + 'STORE')
         # return self.user_data_dir + 'STORE'
+
+    """ section graph dialog """
+    def open_graph_dialog(self, text):
+        item = text[:(text.find(':') - 1)]
+        if item in self.store['category']['cat']:
+            r = self.db.fetch_cost_and_data('category', item)
+        else:
+            r = self.db.fetch_cost_and_data('project', item)
+        time = [r[i][1] for i in range(len(r)) if r[i][0] != 0]    #'2022-02-21', '2022-02-21']
+        cost = [r[i][0] for i in range(len(r)) if r[i][0] != 0]    #[100, 10]
+        "pass param as a graph attr"
+        GraphDialog(cost, time).show_graph()
 
 
 Budget().run()
