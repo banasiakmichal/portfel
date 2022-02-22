@@ -1,6 +1,7 @@
 import sqlite3, datetime
 from decimal import Decimal
-from storage import store
+from kivymd.app import MDApp
+from os.path import join
 
 
 class Mydb:
@@ -12,12 +13,11 @@ class Mydb:
     day_start = ''
     day_end = ''
 
-    # create dbconn attr
-    conn = sqlite3.connect("budget.db")
-    cur = conn.cursor()
-
     """ crete table with: date, project, category, cost"""
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
+        self.conn = sqlite3.connect(join(self.path, "budget.db"))
+        self.cur = self.conn.cursor()
         self.cur.execute("CREATE TABLE IF NOT EXISTS budget "
                          "(date TEXT, project TEXT, category TEXT, cost INT)")
         self.calendar()
@@ -28,6 +28,12 @@ class Mydb:
         self.conn.commit()
         return self.conn.total_changes
 
+    """ fetch data and cost from category or projects """
+    def fetch_cost_and_data(self, catpro, item):
+        q = state = f"SELECT cost, date from budget WHERE {catpro} = '{item}'"
+        rows = self.cur.execute(q).fetchall()
+        return rows
+
     """ fetch costs from table"""
     def fetch_col(self, col='project'): return self.cur.execute(f"SELECT {col} from budget").fetchall()
 
@@ -36,9 +42,9 @@ class Mydb:
 
     def fetch_week(self): return self.cur.execute(f"Select cost from budget WHERE date BETWEEN '{self.day_start}' and '{self.day_end}'").fetchall()
 
-    def fetch_current_month(self): return self.cur.execute(f"Select cost from budget WHERE date LIKE '%{str(self.month)}%'").fetchall()
+    def fetch_current_month(self): return self.cur.execute(f"Select cost from budget WHERE date LIKE '%{str(self.year)}-{self.today[5:7]}%'").fetchall()
 
-    def fetch_last_mont(self): return self.cur.execute(f"Select cost from budget WHERE date LIKE '%{self.year}-{self.get_month()}%'").fetchall()
+    def fetch_last_mont(self): return self.cur.execute(f"Select cost from budget WHERE date LIKE '%{str(self.year)}-{self.get_month()}%'").fetchall()
 
     """ fetch all records with year """
     def all_year(self): return self.cur.execute(f"Select cost from budget WHERE date LIKE '%{str(self.year)}%'").fetchall()
@@ -48,13 +54,13 @@ class Mydb:
     def cat_pro_costs(self, catpro, stor, *args):
         """ summary costs for items in category and projects """
         if stor:
+            store = MDApp.get_running_app().store
             for it in stor:
                     rows = self.cur.execute(f"SELECT cost from budget WHERE {catpro} = '{it}'").fetchall()
                     store['costs'][it] = sum([i for item in rows for i in item])
 
     def calendar(self):
         """ calendar function for weekly cost calculate """
-        #todo: test this script with unittest for allyear!!! IMPORTANT
         days = {'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6, 'Sun': 7}
         n_d = datetime.datetime.now().strftime('%a')  # Sun
         d = int(Decimal(self.today[-2:]))
@@ -68,6 +74,7 @@ class Mydb:
          list[0] = all costs, list[1] - last week costs, list[2] - last month  '''
 
         if stor:
+            store = MDApp.get_running_app().store
             for item in stor:
                 state = f"SELECT cost from budget WHERE {param} = '{item}'"
                 # get all costs for all items in category and project
@@ -76,16 +83,21 @@ class Mydb:
                 # get all for item from last week
                 rows_w = self.cur.execute(f"{state} AND date BETWEEN '{self.day_start}' and '{self.day_end}'").fetchall()
                 store['catpro'][item].append(sum([i for item in rows_w for i in item]))
-                # get all for item from last month
-                rows_m = self.cur.execute(f"{state} AND date LIKE '%{str(self.month)}%'").fetchall()
+                # get all for item from current month
+                #todo: correct this in product app
+                rows_m = self.cur.execute(f"{state} AND date LIKE '%{str(self.year)}-{self.today[5:7]}%'").fetchall()
                 store['catpro'][item].append(sum([i for item in rows_m for i in item]))
 
     def get_month(self):
         """ helping func to get month number """
-        m = str(self.month - 1)
-        if m == '0':
-            m = str(12)
-        return m
+        #todo: correct this method in prod app
+        m = self.month - 1
+        if m == 0:
+            return str(12)
+        elif m in range(1, 10):
+            return '0' + str(m)
+        elif m in range(10, 12):
+            return str(m)
 
     def del_item(self, catpro, item):
         query = f"DELETE from budget WHERE {catpro} = ?"

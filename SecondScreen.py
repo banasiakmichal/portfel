@@ -1,6 +1,6 @@
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from kivy.clock import Clock
-from storage import store
+from kivymd.app import MDApp
 from kivy.uix.recycleview import RecycleView
 from Mdialog import InfoDialog
 
@@ -16,11 +16,12 @@ class GeneralView(RecycleView):
         Clock.schedule_once(self.populate_view)
 
     def populate_view(self, *args):
+        store = MDApp.get_running_app().store
         if store['costs']:
             try:
                 self.data = [{'text': f"{k} :  {v} zł"} for k, v in store['costs'].items() if k != 'RAZEM']
             except Exception as e:
-                self.data = []   #todo: v.2 - logging module with e, emialclient, internet permission
+                self.data = []
                 InfoDialog(text='UPSS...coś poszło nie tak. Wykonaj restart aplikacji').dialog_()
         else:
             self.data = []
@@ -34,13 +35,14 @@ class CostsView(RecycleView):
         Clock.schedule_once(self.populate_view)
 
     def populate_view(self, *args):
+        store = MDApp.get_running_app().store
         if store['catpro']:
             try:
                 self.data = [{'text': f"{k.upper()} : {v[0]} zł",
                               'secondary_text': f"w tym tygodniu: {v[1]} zł",
                               'tertiary_text': f"w tym miesiącu: {v[2]} zł"} for k, v in store['catpro'].items()]
             except Exception as e:
-                self.data = []  #todo: v.2 - logging module with e, emialclient, internet permission
+                self.data = []
                 InfoDialog(text='UPSS...coś poszło nie tak. Wykonaj restart aplikacji').dialog_()
         else:
             self.data = []

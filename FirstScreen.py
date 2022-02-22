@@ -1,13 +1,14 @@
+from kivymd.app import MDApp
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from kivy.uix.recycleview import RecycleView
 from kivy.clock import Clock
-from storage import store
 from kivymd.uix.button import MDRectangleFlatButton
-from kivymd.app import App
 from kivy.properties import StringProperty
 from Mdialog import InfoDialog
 from decor import db_dialog
 import re
+
+
 
 texts_in = {
     'in_error': 'Niepoprawny format kosztów. Wprowadź koszt zgodnie z wzorcem: np: dziesięć złotych i pięćdziesiat '
@@ -33,6 +34,7 @@ class CatProView(RecycleView):
         Clock.schedule_once(self.populate_view)
 
     def populate_view(self, *args):
+        store = MDApp.get_running_app().store
         if store['category']['cat'] or store['project']['pro']:
             # join lists
             new_store = [*store['category']['cat'], *store['project']['pro']]
@@ -54,6 +56,7 @@ class CatProButton(MDRectangleFlatButton):
             cost = self.validate(cost)
             if cost is not None and cost != 0.0:
                 cost, item = str(cost), self.text
+                store = MDApp.get_running_app().store
                 if item in store['category']['cat']:
                     self.ins_cost(cost, None, item)
                 elif item in store['project']['pro']:
@@ -74,7 +77,7 @@ class CatProButton(MDRectangleFlatButton):
 
     @db_dialog
     def ins_cost(self, *args):
-        app = App.get_running_app().db
+        app = MDApp.get_running_app().db
         return app.insert_cost(*args)
 
 
