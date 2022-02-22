@@ -1,21 +1,22 @@
-""" still in ios branch !!! important """
 # set keyboard mode for ios device
-from kivy.config import Config
-Config.set('kivy', 'keyboard_mode', 'dock')
+#from kivy.config import Config
+#Config.set('kivy', 'keyboard_mode', 'dock')
 from kivy.lang.builder import Builder
 from kivymd.uix.bottomnavigation import MDBottomNavigation
+from kivy.clock import Clock
+from functools import partial
 import SecondScreen
 import FirstScreen
 import ThirdScreen
 from class_mydb import Mydb
 from storage import Storage
-from kivy.core.window import Window
 from kivy.properties import StringProperty
 from kivymd.app import MDApp
-from Mdialog import GraphDialog, Content
-# from os.path import join
+from Mdialog import GraphDialog
+
 """ set test window and input android keyboard"""
-#Window.size = (375, 667)
+# from kivy.core.window import Window
+# Window.size = (375, 667)
 # Window.softinput_mode = "resize"
 
 kv = '''
@@ -83,7 +84,6 @@ class Budget(MDApp):
     costs_sum = StringProperty('0')
     # store = ''
 
-    # added 27.01
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # init DICTstorage from class Storage() in storage.py for ios device
@@ -175,10 +175,9 @@ class Budget(MDApp):
             r = self.db.fetch_cost_and_data('category', item)
         else:
             r = self.db.fetch_cost_and_data('project', item)
-        time = [r[i][1] for i in range(len(r)) if r[i][0] != 0]    #'2022-02-21', '2022-02-21']
-        cost = [r[i][0] for i in range(len(r)) if r[i][0] != 0]    #[100, 10]
+        time = [r[i][1] for i in range(len(r))] #if r[i][0] != 0]
+        cost = [r[i][0] for i in range(len(r))] #if r[i][0] != 0]
         "pass param as a graph attr"
-        GraphDialog(cost, time).show_graph()
-
+        GraphDialog(cost, time, item).show_graph()
 
 Budget().run()
