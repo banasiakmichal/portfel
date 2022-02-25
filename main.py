@@ -114,7 +114,7 @@ class Budget(MDApp):
         for i in args:
             rows = self.db.fetch_col(i)
             items = [i for item in rows for i in item if i is not None]
-            if i is 'category':
+            if i == 'category':
                 self.store['category']['cat'] = list(dict.fromkeys(items))
             else:
                 self.store['project']['pro'] = list(dict.fromkeys(items))

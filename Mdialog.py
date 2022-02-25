@@ -4,6 +4,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.clock import Clock
 from kivymd.uix.list import ThreeLineListItem
 from kivy_garden.graph import Graph, MeshLinePlot
+from kivymd.uix.label import MDLabel
 
 
 class InfoDialog(MDDialog):
@@ -33,7 +34,7 @@ class Content(BoxLayout):
     def __init__(self, cost, time, **kwargs):
         super().__init__(**kwargs)
 
-        if cost and time:
+        if len(cost) and len(time) > 1:
             self.cost = cost
             self.time = time
             self.max = max(self.cost)
@@ -41,23 +42,33 @@ class Content(BoxLayout):
         else:
             self.cost = []
             self.time = []
+            self.l = MDLabel(text='Nie masz jeszcze kosztów do wyświetlenia.')
+            self.ids.graph.add_widget(self.l)
 
     def graph(self, *args):
         """
         https://github.com/kivy-garden/graph/blob/27c93e044cdae041c3fd1c98548bce7494f61e9e/kivy_garden/graph/__init__.py#L159
-            """
-        l = [10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000]
+
+            y_ticks_major:
+                if max(cost) in range(0,1)
+                    y_t_m = max(cost)
+                else:
+                    y_t_m = max(cost) / 10
+        """
+        m = int(max(self.cost))
+        def f(x): return x / 10 if (x in range(0, 1)) else(x)
+
         self.graph = Graph(xlabel='czas', ylabel='koszt',
-                           y_ticks_major=list(filter(lambda x: x / 10 < self.max > x / 10, [x * 10 for x in l]))[0] / 10,
+                           y_ticks_major=f(m),
                            x_ticks_major=1,
                            border_color=[0.349, 0.349, 0.349, 1],
                            tick_color=[0.349, 0.349, 0.349, 1],
-                           label_options={'color': [0.349, 0.349, 0.349, 1], 'bold': False},
+                           label_options={'color': [1, 0.647, 0], 'bold': False},
                            draw_border=True,
                            y_grid_label=True, x_grid_label=True,
                            xmin=0, xmax=len(self.time),
                            ymin=0, ymax=self.max)
-        self.plot = MeshLinePlot(color=[0.902, 0.494, 0.133, 1])
+        self.plot = MeshLinePlot(color=[1, 0.647, 0])
         self.plot.points = list(zip(range(len(self.time)), self.cost))
         self.graph.add_plot(self.plot)
         self.ids.graph.add_widget(self.graph)
